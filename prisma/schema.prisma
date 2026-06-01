@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Frequency {
+  Daily
+  Weekly
+  Monthly
+  Quarterly
+  OneTime
+}
+
+model Intern {
+  id          String           @id @default(cuid())
+  name        String
+  startedAt   DateTime         @default(now())
+  active      Boolean          @default(true)
+  notes       String           @default("")
+  sortOrder   Int              @default(0)
+  assignments TaskAssignment[]
+  completions Completion[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+model TaskCategory {
+  id        String   @id @default(cuid())
+  name      String
+  color     String
+  sortOrder Int      @default(0)
+  tasks     Task[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Task {
+  id          String           @id @default(cuid())
+  title       String
+  description String           @default("")
+  categoryId  String
+  category    TaskCategory     @relation(fields: [categoryId], references: [id])
+  frequency   Frequency        @default(Weekly)
+  target      Int              @default(1)
+  unit        String           @default("tasks")
+  done        Boolean          @default(false)
+  sortOrder   Int              @default(0)
+  assignments TaskAssignment[]
+  completions Completion[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+model TaskAssignment {
+  id       String @id @default(cuid())
+  taskId   String
+  task     Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  internId String
+  intern   Intern @relation(fields: [internId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, internId])
+}
+
+model Completion {
+  id          String   @id @default(cuid())
+  taskId      String
+  task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  internId    String
+  intern      Intern   @relation(fields: [internId], references: [id], onDelete: Cascade)
+  completedAt DateTime @default(now())
+}
+
+model ChatLog {
+  id        String   @id @default(cuid())
+  role      String
+  content   String
+  createdAt DateTime @default(now())
+}

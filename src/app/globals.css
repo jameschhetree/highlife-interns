@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+}
+
+body {
+  background: #FAFAF8;
+  color: #1a1a1a;
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #d4d4d4;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a3a3a3;
+}
+
+/* Inline editable fields */
+.editable-field {
+  cursor: text;
+  border-radius: 4px;
+  padding: 1px 4px;
+  margin: -1px -4px;
+  transition: background-color 0.15s ease;
+}
+.editable-field:hover {
+  background-color: rgba(0,0,0,0.04);
+}
+.editable-field:focus {
+  outline: none;
+  background-color: rgba(0,0,0,0.06);
+  box-shadow: 0 0 0 2px rgba(245,158,11,0.3);
+}
