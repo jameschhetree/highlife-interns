@@ -71,6 +71,7 @@ model Completion {
   internId    String
   intern      Intern   @relation(fields: [internId], references: [id], onDelete: Cascade)
   completedAt DateTime @default(now())
+  notes       String   @default("")
 }
 
 model ChatLog {

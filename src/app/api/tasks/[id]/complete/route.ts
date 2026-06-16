@@ -39,6 +39,7 @@ export async function POST(
       taskId,
       internId: body.internId,
       ...(completedAt ? { completedAt } : {}),
+      ...(body.notes ? { notes: body.notes } : {}),
     },
   });
 
