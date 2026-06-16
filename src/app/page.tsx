@@ -425,6 +425,11 @@ export default function InternsPage() {
     fetchData();
   };
 
+  const undoComplete = async (taskId: string, internId: string) => {
+    await api(`/api/tasks/${taskId}/complete`, "DELETE", { internId });
+    fetchData();
+  };
+
   const sendChat = async () => {
     if (!chatInput.trim() || chatLoading) return;
     const msg = chatInput;
@@ -864,14 +869,18 @@ export default function InternsPage() {
                                 <div key={intern.id} className="flex flex-col gap-1">
                                   <button
                                     onClick={() => {
-                                      if (met) return;
+                                      if (met) {
+                                        if (confirm(`Undo last completion${filter === "All" ? ` for ${intern.name}` : ""}?`)) {
+                                          undoComplete(task.id, intern.id);
+                                        }
+                                        return;
+                                      }
                                       setCompletingTask({ taskId: task.id, internId: intern.id });
                                       setCompletionNotes("");
                                     }}
-                                    disabled={met}
                                     className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-medium transition-all ${
                                       met
-                                        ? "bg-emerald-50 text-emerald-600 border border-emerald-200"
+                                        ? "bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-red-50 hover:border-red-200 hover:text-red-600 cursor-pointer"
                                         : "bg-[#fafaf8] text-[#666] border border-[#e5e5e5] hover:border-emerald-300 hover:bg-emerald-50 cursor-pointer"
                                     }`}
                                   >

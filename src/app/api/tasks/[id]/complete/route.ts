@@ -45,3 +45,24 @@ export async function POST(
 
   return Response.json(completion, { status: 201 });
 }
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const prisma = requirePrisma();
+  const { id: taskId } = await params;
+  const { internId } = await request.json();
+
+  const latest = await prisma.completion.findFirst({
+    where: { taskId, internId },
+    orderBy: { completedAt: "desc" },
+  });
+
+  if (!latest) {
+    return Response.json({ error: "No completion found" }, { status: 404 });
+  }
+
+  await prisma.completion.delete({ where: { id: latest.id } });
+  return Response.json({ ok: true, deleted: latest.id });
+}
