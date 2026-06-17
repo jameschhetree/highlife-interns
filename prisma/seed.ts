@@ -150,7 +150,7 @@ async function main() {
       title: "Help with podcast setup + breakdown",
       description: "Mic placement, lighting, cable management, post-session cleanup",
       categoryId: catMap["Hospitality"],
-      frequency: "Weekly" as const,
+      frequency: "Monthly" as const,
       target: 3,
       unit: "sessions",
       sortOrder: 9,

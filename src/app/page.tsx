@@ -19,6 +19,7 @@ import {
   Settings,
   CheckCircle2,
   Circle,
+  Minus,
 } from "lucide-react";
 
 /* ---- Types ------------------------------------------------ */
@@ -867,20 +868,25 @@ export default function InternsPage() {
 
                               return (
                                 <div key={intern.id} className="flex flex-col gap-1">
+                                  <div className="flex items-center gap-1">
+                                  {count > 0 && (
+                                    <button
+                                      onClick={() => undoComplete(task.id, intern.id)}
+                                      className="flex items-center justify-center w-5 h-5 rounded-md bg-[#fafaf8] border border-[#e5e5e5] hover:bg-red-50 hover:border-red-300 hover:text-red-500 text-[#999] transition-all cursor-pointer"
+                                      title="Undo last completion"
+                                    >
+                                      <Minus size={10} />
+                                    </button>
+                                  )}
                                   <button
                                     onClick={() => {
-                                      if (met) {
-                                        if (confirm(`Undo last completion${filter === "All" ? ` for ${intern.name}` : ""}?`)) {
-                                          undoComplete(task.id, intern.id);
-                                        }
-                                        return;
-                                      }
+                                      if (met) return;
                                       setCompletingTask({ taskId: task.id, internId: intern.id });
                                       setCompletionNotes("");
                                     }}
                                     className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-medium transition-all ${
                                       met
-                                        ? "bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-red-50 hover:border-red-200 hover:text-red-600 cursor-pointer"
+                                        ? "bg-emerald-50 text-emerald-600 border border-emerald-200 cursor-default"
                                         : "bg-[#fafaf8] text-[#666] border border-[#e5e5e5] hover:border-emerald-300 hover:bg-emerald-50 cursor-pointer"
                                     }`}
                                   >
@@ -891,6 +897,7 @@ export default function InternsPage() {
                                     )}
                                     {filter === "All" ? intern.name : ""} {count}/{task.target}
                                   </button>
+                                  </div>
 
                                   {/* Completion form */}
                                   <AnimatePresence>
