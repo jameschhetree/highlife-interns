@@ -82,18 +82,22 @@ function isSameDay(a: Date, b: Date): boolean {
 
 type DeliverableState = Record<string, { done: boolean; notes: string }>;
 
-function loadState(internId: string, weekKey: string): DeliverableState {
-  if (typeof window === "undefined") return {};
+async function fetchState(internId: string, weekKey: string): Promise<DeliverableState> {
   try {
-    const raw = localStorage.getItem(`hl-report-${internId}-${weekKey}`);
-    return raw ? JSON.parse(raw) : {};
+    const res = await fetch(`/api/deliverables?internId=${internId}&weekKey=${weekKey}`);
+    if (!res.ok) return {};
+    return await res.json();
   } catch {
     return {};
   }
 }
 
-function saveState(internId: string, weekKey: string, state: DeliverableState) {
-  localStorage.setItem(`hl-report-${internId}-${weekKey}`, JSON.stringify(state));
+function persistItem(internId: string, weekKey: string, deliverableId: string, done: boolean, notes: string) {
+  fetch("/api/deliverables", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ internId, weekKey, deliverableId, done, notes }),
+  }).catch(() => {});
 }
 
 export default function InternsPage() {
@@ -101,6 +105,7 @@ export default function InternsPage() {
   const [loading, setLoading] = useState(true);
   const [selectedInternId, setSelectedInternId] = useState<string | null>(null);
   const [deliverables, setDeliverables] = useState<DeliverableState>({});
+  const [progressCache, setProgressCache] = useState<Record<string, number>>({});
   const [slideDir, setSlideDir] = useState<"left" | "right">("right");
 
   const [monday, setMonday] = useState(() => getMondayDate(new Date()));
@@ -113,7 +118,17 @@ export default function InternsPage() {
     try {
       const res = await fetch(`/api/state?week=${weekKey}`);
       const data = await res.json();
-      setInterns((data.interns || []).filter((i: Intern) => i.active));
+      const active = (data.interns || []).filter((i: Intern) => i.active);
+      setInterns(active);
+      const cache: Record<string, number> = {};
+      await Promise.all(
+        active.map(async (intern: Intern) => {
+          const state = await fetchState(intern.id, weekKey);
+          const dels = getDeliverables(intern.name);
+          cache[intern.id] = dels.filter((d) => state[d.id]?.done).length;
+        })
+      );
+      setProgressCache(cache);
     } catch (err) {
       console.error("Failed to fetch:", err);
     } finally {
@@ -127,7 +142,7 @@ export default function InternsPage() {
 
   useEffect(() => {
     if (selectedInternId) {
-      setDeliverables(loadState(selectedInternId, weekKey));
+      fetchState(selectedInternId, weekKey).then(setDeliverables);
     }
   }, [selectedInternId, weekKey]);
 
@@ -143,23 +158,23 @@ export default function InternsPage() {
   function toggleDeliverable(id: string) {
     if (!selectedInternId) return;
     const current = deliverables[id] || { done: false, notes: "" };
-    const next = { ...deliverables, [id]: { ...current, done: !current.done } };
+    const updated = { ...current, done: !current.done };
+    const next = { ...deliverables, [id]: updated };
     setDeliverables(next);
-    saveState(selectedInternId, weekKey, next);
+    persistItem(selectedInternId, weekKey, id, updated.done, updated.notes);
   }
 
   function updateNotes(id: string, notes: string) {
     if (!selectedInternId) return;
     const current = deliverables[id] || { done: false, notes: "" };
-    const next = { ...deliverables, [id]: { ...current, notes } };
+    const updated = { ...current, notes };
+    const next = { ...deliverables, [id]: updated };
     setDeliverables(next);
-    saveState(selectedInternId, weekKey, next);
+    persistItem(selectedInternId, weekKey, id, updated.done, notes);
   }
 
   function getInternProgress(intern: Intern): number {
-    const state = loadState(intern.id, weekKey);
-    const dels = getDeliverables(intern.name);
-    return dels.filter((d) => state[d.id]?.done).length;
+    return progressCache[intern.id] ?? 0;
   }
 
   const selectedIntern = interns.find((i) => i.id === selectedInternId);

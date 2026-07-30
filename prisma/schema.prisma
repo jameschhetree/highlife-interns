@@ -15,16 +15,17 @@ enum Frequency {
 }
 
 model Intern {
-  id          String           @id @default(cuid())
-  name        String
-  startedAt   DateTime         @default(now())
-  active      Boolean          @default(true)
-  notes       String           @default("")
-  sortOrder   Int              @default(0)
-  assignments TaskAssignment[]
-  completions Completion[]
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  id                       String                  @id @default(cuid())
+  name                     String
+  startedAt                DateTime                @default(now())
+  active                   Boolean                 @default(true)
+  notes                    String                  @default("")
+  sortOrder                Int                     @default(0)
+  assignments              TaskAssignment[]
+  completions              Completion[]
+  deliverableCompletions   DeliverableCompletion[] @relation("deliverables")
+  createdAt                DateTime                @default(now())
+  updatedAt                DateTime                @updatedAt
 }
 
 model TaskCategory {
@@ -72,6 +73,20 @@ model Completion {
   intern      Intern   @relation(fields: [internId], references: [id], onDelete: Cascade)
   completedAt DateTime @default(now())
   notes       String   @default("")
+}
+
+model DeliverableCompletion {
+  id             String   @id @default(cuid())
+  internId       String
+  intern         Intern   @relation("deliverables", fields: [internId], references: [id], onDelete: Cascade)
+  deliverableId  String
+  weekKey        String
+  done           Boolean  @default(false)
+  notes          String   @default("")
+  completedAt    DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([internId, deliverableId, weekKey])
 }
 
 model ChatLog {
