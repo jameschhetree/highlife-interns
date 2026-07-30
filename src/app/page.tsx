@@ -10,7 +10,7 @@ interface Intern {
   active: boolean;
 }
 
-const DELIVERABLES = [
+const SHARED_DELIVERABLES = [
   {
     id: "weekly-update",
     label: "Weekly Update",
@@ -27,16 +27,29 @@ const DELIVERABLES = [
     description: "Pick a day/time for at least 1hr to work with Jaco or Jojo",
   },
   {
-    id: "project-deliverable",
-    label: "Weekly Project Deliverable",
-    description: "Complete your assigned project deliverable for the week",
-  },
-  {
     id: "sessions",
     label: "Sit in on 2 Sessions",
     description: "Attend at least 2 sessions this week",
   },
 ];
+
+const PROJECT_BY_NAME: Record<string, { label: string; description: string }> = {
+  Ando: { label: "Shoot & Post 1x", description: "Shoot and post content at least 1x this week" },
+  Koriq: { label: "Shoot & Post 1x", description: "Shoot and post content at least 1x this week" },
+  Tre: { label: "Shoot & Post 1x", description: "Shoot and post content at least 1x this week" },
+  Jenny: { label: "Shoot & Post 1x", description: "Shoot and post content at least 1x this week" },
+  Thomas: { label: "Outreach to 15 Clients", description: "Reach out to 15 clients this week" },
+  Mekhi: { label: "Outreach to 15 Clients", description: "Reach out to 15 clients this week" },
+};
+
+function getDeliverables(internName: string) {
+  const project = PROJECT_BY_NAME[internName] || { label: "Weekly Project Deliverable", description: "Complete your assigned project deliverable" };
+  return [
+    ...SHARED_DELIVERABLES.slice(0, 3),
+    { id: "project-deliverable", label: project.label, description: project.description },
+    SHARED_DELIVERABLES[3],
+  ];
+}
 
 function getMondayDate(d: Date): Date {
   const result = new Date(d.getFullYear(), d.getMonth(), d.getDate());
@@ -143,9 +156,10 @@ export default function InternsPage() {
     saveState(selectedInternId, weekKey, next);
   }
 
-  function getInternProgress(internId: string): number {
-    const state = loadState(internId, weekKey);
-    return DELIVERABLES.filter((d) => state[d.id]?.done).length;
+  function getInternProgress(intern: Intern): number {
+    const state = loadState(intern.id, weekKey);
+    const dels = getDeliverables(intern.name);
+    return dels.filter((d) => state[d.id]?.done).length;
   }
 
   const selectedIntern = interns.find((i) => i.id === selectedInternId);
@@ -222,7 +236,7 @@ export default function InternsPage() {
 
               {/* Deliverables */}
               <div className="space-y-3">
-                {DELIVERABLES.map((d) => {
+                {getDeliverables(selectedIntern.name).map((d) => {
                   const state = deliverables[d.id] || { done: false, notes: "" };
                   return (
                     <div
@@ -266,9 +280,14 @@ export default function InternsPage() {
 
               {/* Progress */}
               <div className="mt-6 text-center">
-                <span className="text-[13px] font-medium text-[#999]">
-                  {DELIVERABLES.filter((d) => deliverables[d.id]?.done).length}/{DELIVERABLES.length} completed
-                </span>
+                {(() => {
+                  const dels = getDeliverables(selectedIntern.name);
+                  return (
+                    <span className="text-[13px] font-medium text-[#999]">
+                      {dels.filter((d) => deliverables[d.id]?.done).length}/{dels.length} completed
+                    </span>
+                  );
+                })()}
               </div>
             </motion.div>
           ) : (
@@ -326,8 +345,9 @@ export default function InternsPage() {
               {/* Intern cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {interns.map((intern, i) => {
-                  const done = getInternProgress(intern.id);
-                  const pct = Math.round((done / DELIVERABLES.length) * 100);
+                  const dels = getDeliverables(intern.name);
+                  const done = getInternProgress(intern);
+                  const pct = Math.round((done / dels.length) * 100);
                   return (
                     <motion.button
                       key={intern.id}
@@ -347,7 +367,7 @@ export default function InternsPage() {
                       </div>
                       <div className="flex items-center justify-between mb-1.5">
                         <span className="text-[11px] text-[#999]">
-                          {done}/{DELIVERABLES.length} done
+                          {done}/{dels.length} done
                         </span>
                         <span className="text-[11px] font-medium text-[#999]">{pct}%</span>
                       </div>
