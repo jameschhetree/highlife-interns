@@ -26,6 +26,16 @@ const DELIVERABLES = [
     label: "Workshop with Jaco",
     description: "Pick a day/time for at least 1hr to work with Jaco",
   },
+  {
+    id: "project-deliverable",
+    label: "Weekly Project Deliverable",
+    description: "Complete your assigned project deliverable for the week",
+  },
+  {
+    id: "sessions",
+    label: "Sit in on 2 Sessions",
+    description: "Attend at least 2 sessions this week",
+  },
 ];
 
 function getMondayDate(d: Date): Date {
