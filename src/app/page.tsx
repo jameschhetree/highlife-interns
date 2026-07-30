@@ -23,8 +23,8 @@ const DELIVERABLES = [
   },
   {
     id: "workshop",
-    label: "Workshop with Jaco",
-    description: "Pick a day/time for at least 1hr to work with Jaco",
+    label: "Workshop with Jaco or Jojo",
+    description: "Pick a day/time for at least 1hr to work with Jaco or Jojo",
   },
   {
     id: "project-deliverable",
